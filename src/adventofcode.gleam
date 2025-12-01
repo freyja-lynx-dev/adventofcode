@@ -1,5 +1,5 @@
-import gleam/io
+import gladvent
 
 pub fn main() -> Nil {
-  io.println("Hello from adventofcode!")
+  gladvent.run()
 }
