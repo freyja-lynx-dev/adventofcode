@@ -1,4 +1,5 @@
 import aoc_2025/day_1
+import aoc_2025/day_2
 import gleeunit
 
 pub fn main() -> Nil {
@@ -30,4 +31,45 @@ pub fn day1_pt_1_test() {
 
 pub fn day1_pt_2_test() {
   assert 6 == day_1.pt_2(day_1.parse(day1_test_input()))
+}
+
+fn day2_test_data() {
+  "11-22,95-115,998-1012,1188511880-1188511890,222220-222224,1698522-1698528,446443-446449,38593856-38593862,565653-565659,824824821-824824827,2121212118-2121212124"
+}
+
+pub fn day2_parse_test() {
+  assert Ok([
+      #(11, 22),
+      #(95, 115),
+      #(998, 1012),
+      #(1_188_511_880, 1_188_511_890),
+      #(222_220, 222_224),
+      #(1_698_522, 1_698_528),
+      #(446_443, 446_449),
+      #(38_593_856, 38_593_862),
+      #(565_653, 565_659),
+      #(824_824_821, 824_824_827),
+      #(2_121_212_118, 2_121_212_124),
+    ])
+    == day_2.parse(day2_test_data())
+}
+
+pub fn day2_invalid_ids_test() {
+  assert [11, 22] == day_2.invalid_ids(#(11, 22))
+  assert [99] == day_2.invalid_ids(#(95, 115))
+  assert [1010] == day_2.invalid_ids(#(998, 1012))
+  assert [1_188_511_885] == day_2.invalid_ids(#(1_188_511_880, 1_188_511_890))
+  assert [222_222] == day_2.invalid_ids(#(222_220, 222_224))
+  assert [] == day_2.invalid_ids(#(1_698_522, 1_698_528))
+  assert [446_446] == day_2.invalid_ids(#(446_443, 446_449))
+  assert [38_593_859] == day_2.invalid_ids(#(38_593_856, 38_593_862))
+  assert [] == day_2.invalid_ids(#(565_653, 565_659))
+  assert [] == day_2.invalid_ids(#(824_824_821, 824_824_827))
+  assert [] == day_2.invalid_ids(#(2_121_212_118, 2_121_212_124))
+}
+
+pub fn day2_pt_1_test() {
+  let ranges = day_2.parse(day2_test_data())
+
+  assert 1_227_775_554 == day_2.pt_1(ranges)
 }
