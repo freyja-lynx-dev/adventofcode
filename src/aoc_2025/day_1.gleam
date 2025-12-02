@@ -90,13 +90,12 @@ pub fn parse(input: String) -> List(Int) {
 }
 
 pub fn pt_1(input: List(Int)) -> Int {
-  echo input
   list.fold(
     over: input,
     from: #(0, UnsignedInt(n: 50, max: 99)),
     with: fn(cur, x) {
       // echo "current dial pos: " <> int.to_string(pair.second(cur).n)
-      let #(wraps, res) = rotate(pair.second(cur), x, False)
+      let #(_, res) = rotate(pair.second(cur), x, False)
       // echo "wraps: " <> int.to_string(wraps)
       // echo "res: " <> int.to_string(res)
       // echo "cur: " <> int.to_string(pair.second(cur).n)
@@ -115,9 +114,16 @@ pub fn pt_2(input: List(Int)) -> Int {
     from: #(0, UnsignedInt(n: 50, max: 99)),
     with: fn(cur, x) {
       let #(wraps, res) = rotate(pair.second(cur), x, True)
-      // echo "current dial pos: " <> int.to_string(pair.second(cur).n)
-      // echo "wraps: " <> int.to_string(wraps)
-      // echo "res: " <> int.to_string(res)
+      case pair.second(cur).n {
+        71 -> {
+          echo "current dial pos: " <> int.to_string(pair.second(cur).n)
+          echo "x: " <> int.to_string(x)
+          echo "wraps: " <> int.to_string(wraps)
+          echo "res: " <> int.to_string(res)
+          Nil
+        }
+        _ -> Nil
+      }
       // #(pair.first(cur) + wraps, UnsignedInt(res, pair.second(cur).max))
       case res {
         0 -> #(pair.first(cur) + wraps, UnsignedInt(0, pair.second(cur).max))
@@ -177,18 +183,9 @@ fn unsigned_add_all_wraps(a: UnsignedInt, b: Int) -> #(Int, Int) {
   // echo "wraps: " <> int.to_string(wraps)
   // echo "remainder: " <> int.to_string(remainder)
 
-  let res = case wraps, uncapped_result {
-    0, r if r > a.max -> #(1, remainder)
-    wraps, r if r > a.max -> #(wraps, remainder)
-    wraps, n -> #(wraps, n)
-  }
-
-  case pair.second(res) {
-    100 -> {
-      echo b
-      echo res
-    }
-    _ -> res
+  case uncapped_result {
+    r if r > a.max -> #(wraps, remainder)
+    n -> #(wraps, n)
   }
 }
 
@@ -197,19 +194,14 @@ fn unsigned_subtract(a: UnsignedInt, b: Int) -> #(Int, Int) {
   let uncapped_result = a.n - b
   // let wraps = int.absolute_value(uncapped_result / full_wrap)
   let remainder = int.absolute_value(uncapped_result % full_wrap)
-  let res = case uncapped_result {
+  case uncapped_result {
     r if r < 0 -> {
-      #(1, a.max + 1 - remainder)
+      case a.max + 1 - remainder {
+        100 -> #(1, 0)
+        r -> #(1, r)
+      }
     }
-    r if r == 100 -> #(1, 0)
     r -> #(0, r)
-  }
-  case pair.second(res) {
-    100 -> {
-      echo b
-      echo res
-    }
-    _ -> res
   }
 }
 
@@ -222,22 +214,21 @@ fn unsigned_subtract_all_wraps(a: UnsignedInt, b: Int) -> #(Int, Int) {
   // echo "wraps: " <> int.to_string(wraps)
   // echo "remainder: " <> int.to_string(remainder)
 
-  let res = case wraps, uncapped_result {
-    0, r if r < 0 -> {
-      #(1, a.max + 1 - remainder)
+  case uncapped_result {
+    r if r < 0 -> {
+      case a.max + 1 - remainder {
+        100 -> #(wraps + 1, 0)
+        r -> #(wraps + 1, r)
+      }
     }
-    wraps, r if r < 0 -> {
-      #(wraps + 1, a.max + 1 - remainder)
+    _ -> {
+      // #(wraps, r)
+
+      case a.max + 1 - remainder {
+        100 -> #(wraps + 1, 0)
+        r -> #(wraps, r)
+      }
     }
-    wraps, r if r == 100 -> #(wraps + 1, 0)
-    wraps, r -> #(wraps, r)
-  }
-  case pair.second(res) {
-    100 -> {
-      echo b
-      echo res
-    }
-    _ -> res
   }
 }
 
