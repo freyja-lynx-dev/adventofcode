@@ -54,22 +54,55 @@ pub fn day2_parse_test() {
     == day_2.parse(day2_test_data())
 }
 
-pub fn day2_invalid_ids_test() {
-  assert [11, 22] == day_2.invalid_ids(#(11, 22))
-  assert [99] == day_2.invalid_ids(#(95, 115))
-  assert [1010] == day_2.invalid_ids(#(998, 1012))
-  assert [1_188_511_885] == day_2.invalid_ids(#(1_188_511_880, 1_188_511_890))
-  assert [222_222] == day_2.invalid_ids(#(222_220, 222_224))
-  assert [] == day_2.invalid_ids(#(1_698_522, 1_698_528))
-  assert [446_446] == day_2.invalid_ids(#(446_443, 446_449))
-  assert [38_593_859] == day_2.invalid_ids(#(38_593_856, 38_593_862))
-  assert [] == day_2.invalid_ids(#(565_653, 565_659))
-  assert [] == day_2.invalid_ids(#(824_824_821, 824_824_827))
-  assert [] == day_2.invalid_ids(#(2_121_212_118, 2_121_212_124))
+pub fn day2_invalid_ids_pair_test() {
+  assert [11, 22] == day_2.invalid_ids(#(11, 22), day_2.is_invalid_pair)
+  assert [99] == day_2.invalid_ids(#(95, 115), day_2.is_invalid_pair)
+  assert [1010] == day_2.invalid_ids(#(998, 1012), day_2.is_invalid_pair)
+  assert [1_188_511_885]
+    == day_2.invalid_ids(#(1_188_511_880, 1_188_511_890), day_2.is_invalid_pair)
+  assert [222_222]
+    == day_2.invalid_ids(#(222_220, 222_224), day_2.is_invalid_pair)
+  assert [] == day_2.invalid_ids(#(1_698_522, 1_698_528), day_2.is_invalid_pair)
+  assert [446_446]
+    == day_2.invalid_ids(#(446_443, 446_449), day_2.is_invalid_pair)
+  assert [38_593_859]
+    == day_2.invalid_ids(#(38_593_856, 38_593_862), day_2.is_invalid_pair)
+  assert [] == day_2.invalid_ids(#(565_653, 565_659), day_2.is_invalid_pair)
+  assert []
+    == day_2.invalid_ids(#(824_824_821, 824_824_827), day_2.is_invalid_pair)
+  assert []
+    == day_2.invalid_ids(#(2_121_212_118, 2_121_212_124), day_2.is_invalid_pair)
 }
 
 pub fn day2_pt_1_test() {
   let ranges = day_2.parse(day2_test_data())
 
   assert 1_227_775_554 == day_2.pt_1(ranges)
+}
+
+pub fn day2_invalid_ids_all_test() {
+  assert [11, 22] == day_2.invalid_ids(#(11, 22), day_2.is_invalid_all)
+  assert [99, 111] == day_2.invalid_ids(#(95, 115), day_2.is_invalid_all)
+  assert [999, 1010] == day_2.invalid_ids(#(998, 1012), day_2.is_invalid_all)
+  assert [1_188_511_885]
+    == day_2.invalid_ids(#(1_188_511_880, 1_188_511_890), day_2.is_invalid_all)
+  assert [222_222]
+    == day_2.invalid_ids(#(222_220, 222_224), day_2.is_invalid_all)
+  assert [] == day_2.invalid_ids(#(1_698_522, 1_698_528), day_2.is_invalid_all)
+  assert [446_446]
+    == day_2.invalid_ids(#(446_443, 446_449), day_2.is_invalid_all)
+  assert [38_593_859]
+    == day_2.invalid_ids(#(38_593_856, 38_593_862), day_2.is_invalid_all)
+  assert [565_656]
+    == day_2.invalid_ids(#(565_653, 565_659), day_2.is_invalid_all)
+  assert [824_824_824]
+    == day_2.invalid_ids(#(824_824_821, 824_824_827), day_2.is_invalid_all)
+  assert [2_121_212_121]
+    == day_2.invalid_ids(#(2_121_212_118, 2_121_212_124), day_2.is_invalid_all)
+}
+
+pub fn day2_pt_2_test() {
+  let ranges = day_2.parse(day2_test_data())
+
+  assert 4_174_379_265 == day_2.pt_2(ranges)
 }

@@ -35,7 +35,7 @@ pub fn parse(input: String) -> Result(List(#(Int, Int)), String) {
   })
 }
 
-fn is_invalid(id: Int) -> Bool {
+pub fn is_invalid_pair(id: Int) -> Bool {
   // the problem description says:
   //   you can find the invalid IDs by looking for any ID which is made only of
   //   some sequence of digits repeated twice. So, 55 (5 twice), 6464 (64 twice),
@@ -80,25 +80,49 @@ fn is_invalid(id: Int) -> Bool {
   // lets try that approach once i know if my logic is sound ig
 }
 
-pub fn invalid_ids(in range: #(Int, Int)) -> List(Int) {
+pub fn invalid_ids(in range: #(Int, Int), checker fun) -> List(Int) {
   list.range(pair.first(range), pair.second(range))
-  |> list.filter(keeping: fn(id) { is_invalid(id) })
+  |> list.filter(keeping: fn(id) { fun(id) })
 }
 
 pub fn pt_1(input: Result(List(#(Int, Int)), String)) -> Int {
   case input {
     Error(bad_parse) -> panic as { "bad range: " <> bad_parse }
     Ok(ranges) -> {
-      list.map(ranges, with: fn(range) -> List(Int) { invalid_ids(in: range) })
+      list.map(ranges, with: fn(range) -> List(Int) {
+        invalid_ids(in: range, checker: is_invalid_pair)
+      })
       |> list.flatten()
       |> int.sum()
     }
   }
 }
 
+pub fn is_invalid_all(id: Int) -> Bool {
+  todo as "is_invalid_all not implemented"
+}
+
 pub fn pt_2(input: Result(List(#(Int, Int)), String)) -> Int {
+  // part 2 is a bit different -- instead of just halving, it's any
+  // set of repeating digits from 1 digit to n/2 digits (or the string bisected)
+  // so now the logic looks like:
+  //   - check if string is all the same digit
+  //   - if so, it's invalid
+  //   - otherwise, if the string is even:
+  //     - for each substring window set of sizes 2 -> n/2
+  //     - check if every member of the set is identical 
+  //       - if so, its invalid
+  //       - otherwise, it's invalid
+  //
+  // we will need to consider short circuiting. i'm thinking recursive?
   case input {
-    Ok(ranges) -> todo as "pt2 not implemented"
     Error(bad_parse) -> panic as { "bad range: " <> bad_parse }
+    Ok(ranges) -> {
+      list.map(ranges, with: fn(range) -> List(Int) {
+        invalid_ids(in: range, checker: is_invalid_all)
+      })
+      |> list.flatten()
+      |> int.sum()
+    }
   }
 }
