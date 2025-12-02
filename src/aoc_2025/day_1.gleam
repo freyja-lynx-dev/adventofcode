@@ -28,7 +28,7 @@ fn forward_tick(a: UnsignedInt) -> UnsignedInt {
 fn backward_tick(a: UnsignedInt) -> UnsignedInt {
   case a.n {
     0 -> UnsignedInt(a.max, a.max)
-    x -> UnsignedInt(a.n - 1, a.max)
+    _ -> UnsignedInt(a.n - 1, a.max)
   }
 }
 
@@ -90,15 +90,19 @@ pub fn parse(input: String) -> List(Int) {
 }
 
 pub fn pt_1(input: List(Int)) -> Int {
+  echo input
   list.fold(
     over: input,
     from: #(0, UnsignedInt(n: 50, max: 99)),
-    with: fn(acc, x) {
-      // we can just ignore the incidental zero ticks
-      let #(_, res) = rotate_with_ticks(pair.second(acc), x)
+    with: fn(cur, x) {
+      // echo "current dial pos: " <> int.to_string(pair.second(cur).n)
+      let #(wraps, res) = rotate(pair.second(cur), x, False)
+      // echo "wraps: " <> int.to_string(wraps)
+      // echo "res: " <> int.to_string(res)
+      // echo "cur: " <> int.to_string(pair.second(cur).n)
       case res {
-        0 -> #(pair.first(acc) + 1, UnsignedInt(0, pair.second(acc).max))
-        x -> #(pair.first(acc), UnsignedInt(x, pair.second(acc).max))
+        0 -> #(pair.first(cur) + 1, UnsignedInt(0, pair.second(cur).max))
+        x -> #(pair.first(cur), UnsignedInt(x, pair.second(cur).max))
       }
     },
   )
@@ -109,96 +113,149 @@ pub fn pt_2(input: List(Int)) -> Int {
   list.fold(
     over: input,
     from: #(0, UnsignedInt(n: 50, max: 99)),
-    with: fn(acc, x) {
-      let #(zero_ticks, res) = rotate_with_ticks(pair.second(acc), x)
-      #(zero_ticks + pair.first(acc), UnsignedInt(res, pair.second(acc).max))
+    with: fn(cur, x) {
+      let #(wraps, res) = rotate(pair.second(cur), x, True)
+      // echo "current dial pos: " <> int.to_string(pair.second(cur).n)
+      // echo "wraps: " <> int.to_string(wraps)
+      // echo "res: " <> int.to_string(res)
+      // #(pair.first(cur) + wraps, UnsignedInt(res, pair.second(cur).max))
+      case res {
+        0 -> #(pair.first(cur) + wraps, UnsignedInt(0, pair.second(cur).max))
+        x -> #(pair.first(cur) + wraps, UnsignedInt(x, pair.second(cur).max))
+      }
     },
   )
   |> pair.first()
 }
 
-// here be dragons
-//
-// my original approach was to just do direct integer maths
-// and handle overflows
-// and i know this can work, i want to make this approach work eventually
-// but for now. just tick it lol who cares about function calls
-fn unsigned_add_helper(a: UnsignedInt, b: Int) -> Int {
-  case b {
-    n if n == 0 -> a.n
-    n if n < 0 -> unsigned_add_helper(backward_tick(a), n + 1)
-    n if n > 0 -> unsigned_add_helper(forward_tick(a), n - 1)
-    _ -> panic
-  }
-}
-
-fn overflow_add(a: UnsignedInt, b: Int) {
-  case a.n - b {
-    x if x > a.max -> {
-      // echo "we have overflow"
-      x - a.max - 1
-    }
-    underflow if underflow < 0 -> {
-      // echo "we have underflow"
-      a.max + 1 + underflow
-    }
-    x -> {
-      x
-    }
-  }
-}
-
-fn unsigned_add(a: UnsignedInt, b: Int) -> Int {
+fn unsigned_add(a: UnsignedInt, b: Int) -> #(Int, Int) {
   // it takes the maximum of the uint plus 1 steps to wrap
   // so if we do an integer division b // uint.max + 1, that gets the wraps
   // thus we just need to add the modulo of uint.max + 1 and the additor
   let full_wrap = a.max + 1
-  let _wraps = full_wrap / b
-  let remainder = full_wrap % b
+  let uncapped_result = a.n + b
+  let wraps = uncapped_result / full_wrap
+  let remainder = uncapped_result % full_wrap
+  // echo "unsigned add"
+  // echo "b: " <> int.to_string(b)
+  // echo "uncapped_result: " <> int.to_string(uncapped_result)
+  // echo "wraps: " <> int.to_string(wraps)
+  // echo "remainder: " <> int.to_string(remainder)
 
-  overflow_add(a, remainder)
-}
-
-fn overflow_subtract(a: UnsignedInt, b: Int) {
-  echo "a: " <> int.to_string(a.n)
-  echo "b: " <> int.to_string(b)
-  echo "we should have " <> int.to_string(a.n - b)
-  case a.n + b {
-    x if x > a.max -> {
-      echo "we have overflow"
-      echo x - a.max - 1
+  // case all_wraps {
+  //   True -> {
+  //     case uncapped_result {
+  //       r if r > a.max -> #(wraps + 1, remainder)
+  //       n -> #(wraps, n)
+  //     }
+  //   }
+  //   False -> {
+  let res = case uncapped_result {
+    r if r > a.max -> #(0, remainder)
+    n -> #(0, n)
+  }
+  case pair.second(res) {
+    100 -> {
+      echo b
+      echo res
     }
-    underflow if underflow < 0 -> {
-      echo "we have underflow"
-      echo a.max + 1 + underflow
-    }
-    x -> {
-      echo x
-    }
+    _ -> res
   }
 }
 
-fn unsigned_subtract(a: UnsignedInt, b: Int) -> Int {
+fn unsigned_add_all_wraps(a: UnsignedInt, b: Int) -> #(Int, Int) {
   // it takes the maximum of the uint plus 1 steps to wrap
   // so if we do an integer division b // uint.max + 1, that gets the wraps
   // thus we just need to add the modulo of uint.max + 1 and the additor
   let full_wrap = a.max + 1
-  let wraps = full_wrap / b
-  let remainder = full_wrap % b
-  echo "full_wrap: " <> int.to_string(full_wrap)
-  echo "wraps: " <> int.to_string(wraps)
-  echo "remainder: " <> int.to_string(remainder)
+  let uncapped_result = a.n + b
+  let wraps = uncapped_result / full_wrap
+  let remainder = uncapped_result % full_wrap
+  // echo "unsigned add"
+  // echo "b: " <> int.to_string(b)
+  // echo "uncapped_result: " <> int.to_string(uncapped_result)
+  // echo "wraps: " <> int.to_string(wraps)
+  // echo "remainder: " <> int.to_string(remainder)
 
-  overflow_subtract(a, remainder)
+  let res = case wraps, uncapped_result {
+    0, r if r > a.max -> #(1, remainder)
+    wraps, r if r > a.max -> #(wraps, remainder)
+    wraps, n -> #(wraps, n)
+  }
+
+  case pair.second(res) {
+    100 -> {
+      echo b
+      echo res
+    }
+    _ -> res
+  }
 }
 
-// i wanna figure this out without the insane recursion
-// but that's a later task lol
-fn rotate(a: UnsignedInt, b: Int) -> Int {
-  echo "b: " <> int.to_string(b)
-  case b {
-    b if b < 0 -> unsigned_subtract(a, b)
-    b if b > 0 -> unsigned_add(a, b)
-    _ -> 0
+fn unsigned_subtract(a: UnsignedInt, b: Int) -> #(Int, Int) {
+  let full_wrap = a.max + 1
+  let uncapped_result = a.n - b
+  // let wraps = int.absolute_value(uncapped_result / full_wrap)
+  let remainder = int.absolute_value(uncapped_result % full_wrap)
+  let res = case uncapped_result {
+    r if r < 0 -> {
+      #(1, a.max + 1 - remainder)
+    }
+    r if r == 100 -> #(1, 0)
+    r -> #(0, r)
+  }
+  case pair.second(res) {
+    100 -> {
+      echo b
+      echo res
+    }
+    _ -> res
+  }
+}
+
+fn unsigned_subtract_all_wraps(a: UnsignedInt, b: Int) -> #(Int, Int) {
+  let full_wrap = a.max + 1
+  let uncapped_result = a.n - b
+  let wraps = int.absolute_value(uncapped_result / full_wrap)
+  let remainder = int.absolute_value(uncapped_result % full_wrap)
+  // echo "unsigned sub"
+  // echo "wraps: " <> int.to_string(wraps)
+  // echo "remainder: " <> int.to_string(remainder)
+
+  let res = case wraps, uncapped_result {
+    0, r if r < 0 -> {
+      #(1, a.max + 1 - remainder)
+    }
+    wraps, r if r < 0 -> {
+      #(wraps + 1, a.max + 1 - remainder)
+    }
+    wraps, r if r == 100 -> #(wraps + 1, 0)
+    wraps, r -> #(wraps, r)
+  }
+  case pair.second(res) {
+    100 -> {
+      echo b
+      echo res
+    }
+    _ -> res
+  }
+}
+
+fn rotate(a: UnsignedInt, b: Int, all_wraps: Bool) -> #(Int, Int) {
+  case all_wraps {
+    True -> {
+      case b {
+        b if b < 0 -> unsigned_subtract_all_wraps(a, int.absolute_value(b))
+        b if b > 0 -> unsigned_add_all_wraps(a, b)
+        _ -> #(0, a.n)
+      }
+    }
+    False -> {
+      case b {
+        b if b < 0 -> unsigned_subtract(a, int.absolute_value(b))
+        b if b > 0 -> unsigned_add(a, b)
+        _ -> #(0, a.n)
+      }
+    }
   }
 }
