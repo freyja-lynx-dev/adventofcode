@@ -1,5 +1,5 @@
 import gleam/int
-import gleam/list.{Continue, Stop}
+import gleam/list
 import gleam/pair
 import gleam/string
 
@@ -122,17 +122,6 @@ fn is_invalid_all_helper(
 }
 
 pub fn is_invalid_all(id: Int) -> Bool {
-  // ok so lets think.
-  //
-  // start with the atomic slice (every grapheme, List(String) of size length(id))
-  // if each slice is identical, it is invalid
-  // otherwise, check n+1 slices the same way
-  // until we check slices of n = length(id)/2
-  //
-  // we can also infer that we only need to check a subset of these slices
-  //   - odds and evens both need to check the n=1 case
-  //   - odds only need to check for slices of length(id)%2 != 0
-  //   - evens only need to check for slices of length(id)%2 == 0
   let id_string = int.to_string(id)
   let id_length = string.length(id_string)
   let id_graphemes = string.to_graphemes(id_string)
