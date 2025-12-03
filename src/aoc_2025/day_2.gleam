@@ -1,7 +1,6 @@
 import gleam/int
-import gleam/list
+import gleam/list.{Continue, Stop}
 import gleam/pair
-import gleam/result
 import gleam/string
 
 // Parse a range from a string. Fails when given more or less data than expected.
@@ -98,8 +97,77 @@ pub fn pt_1(input: Result(List(#(Int, Int)), String)) -> Int {
   }
 }
 
+type Parity {
+  Odd
+  Even
+}
+
+fn is_invalid_all_helper(
+  id id: List(String),
+  length length: Int,
+  chunk_by chunk_by: Int,
+) -> Bool {
+  case
+    chunk_by > { length / 2 },
+    list.unique(list.sized_chunk(in: id, into: chunk_by))
+  {
+    // if we haven't yet found invalidity, it is not possible once
+    // we are above n/2 chunks
+    True, _ -> False
+    // if we only get one unique chunk, it is invalid
+    _, [_] -> True
+    // base case
+    _, _ -> is_invalid_all_helper(id, length, chunk_by + 1)
+  }
+}
+
 pub fn is_invalid_all(id: Int) -> Bool {
-  todo as "is_invalid_all not implemented"
+  // ok so lets think.
+  //
+  // start with the atomic slice (every grapheme, List(String) of size length(id))
+  // if each slice is identical, it is invalid
+  // otherwise, check n+1 slices the same way
+  // until we check slices of n = length(id)/2
+  //
+  // we can also infer that we only need to check a subset of these slices
+  //   - odds and evens both need to check the n=1 case
+  //   - odds only need to check for slices of length(id)%2 != 0
+  //   - evens only need to check for slices of length(id)%2 == 0
+  let id_string = int.to_string(id)
+  let id_length = string.length(id_string)
+  let id_graphemes = string.to_graphemes(id_string)
+  // let parity = case id_length % 2 {
+  //   0 -> Even
+  //   _ -> Odd
+  // }
+  case id_length {
+    1 -> False
+    _ -> is_invalid_all_helper(id_graphemes, id_length, 1)
+  }
+  // let all_same_digit = case list.unique(id_graphemes) {
+  //   [_] -> True
+  //   _ -> False
+  // }
+  // list.fold_until(over: id_graphemes, from: True, with: fn(acc, digit) {
+  //   case digit == first {
+  //     True -> Continue(acc)
+  //     False -> Stop(False)
+  //   }
+  // })
+
+  // case parity, all_same_digit {
+  //   _, True -> True
+  //   // you could theoretically just use the helper from the start
+  //   // but i think there's a potential to optimize based on only checking
+  //   // chunks which can actually occur in an ID of length N, rather than all
+  //   // chunk sizes from 1 -> n/2
+  //   //
+  //   // but i want to get it working before i get fussed about the details
+  //   Even, _ ->
+  //     is_invalid_all_helper(id: id_graphemes, length: id_length, chunk_by: 2)
+  //   Odd, _ ->
+  //     is_invalid_all_helper(id: id_graphemes, length: id_length, chunk_by: 3)
+  // }
 }
 
 pub fn pt_2(input: Result(List(#(Int, Int)), String)) -> Int {
@@ -108,8 +176,7 @@ pub fn pt_2(input: Result(List(#(Int, Int)), String)) -> Int {
   // so now the logic looks like:
   //   - check if string is all the same digit
   //   - if so, it's invalid
-  //   - otherwise, if the string is even:
-  //     - for each substring window set of sizes 2 -> n/2
+  //   - otherwise, for each substring window set of sizes 2 -> n/2
   //     - check if every member of the set is identical 
   //       - if so, its invalid
   //       - otherwise, it's invalid
@@ -123,6 +190,7 @@ pub fn pt_2(input: Result(List(#(Int, Int)), String)) -> Int {
       })
       |> list.flatten()
       |> int.sum()
+      // we got 25663320876 first try, but it's not correct...
     }
   }
 }
