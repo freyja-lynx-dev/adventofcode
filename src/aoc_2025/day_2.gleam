@@ -1,6 +1,7 @@
 import gleam/int
 import gleam/list
 import gleam/pair
+import gleam/set.{type Set}
 import gleam/string
 
 // Parse a range from a string. Fails when given more or less data than expected.
@@ -88,12 +89,22 @@ pub fn pt_1(input: Result(List(#(Int, Int)), String)) -> Int {
   case input {
     Error(bad_parse) -> panic as { "bad range: " <> bad_parse }
     Ok(ranges) -> {
-      list.map(ranges, with: fn(range) -> List(Int) {
-        invalid_ids(in: range, checker: is_invalid_pair)
+      let invalid_ids = pt_1_all_invalid_ids()
+      list.map(ranges, with: fn(range) {
+        let #(lower, upper) = range
+        list.filter(list.range(lower, upper), keeping: fn(id) {
+          set.contains(invalid_ids, id)
+        })
       })
       |> list.flatten()
       |> int.sum()
     }
+    //   list.map(ranges, with: fn(range) -> List(Int) {
+    //     invalid_ids(in: range, checker: is_invalid_pair)
+    //   })
+    //   |> list.flatten()
+    //   |> int.sum()
+    // }
   }
 }
 
@@ -159,6 +170,63 @@ pub fn is_invalid_all(id: Int) -> Bool {
   // }
 }
 
+fn generate_repeats(n, str) -> Int {
+  case
+    {
+      list.repeat(str, n)
+      |> string.concat
+      |> int.parse
+    }
+  {
+    Error(_) ->
+      panic as "we're converting from ints, it should always work. in generate_repeats"
+    Ok(n) -> n
+  }
+}
+
+fn invalid_ids_from(num: Int) -> List(Int) {
+  let num_as_str = int.to_string(num)
+  let max_repeat = 10 / string.length(num_as_str)
+
+  list.range(2, max_repeat)
+  |> list.map(fn(x) { generate_repeats(x, num_as_str) })
+}
+
+fn pt_1_all_invalid_ids() -> Set(Int) {
+  list.range(1, 99_999)
+  |> list.map(with: fn(n) {
+    let substr = int.to_string(n)
+    case int.parse(substr <> substr) {
+      Error(_) -> panic as "should never happen in all_invalid_ids"
+      Ok(invalid_id) -> invalid_id
+    }
+  })
+  |> set.from_list()
+}
+
+fn pt_2_all_invalid_ids() -> Set(Int) {
+  // so we have ids lengths 1 -> 10
+  // we can thus generate all invalid ids
+  // and then check every potential invalid ID for the set of invalid ids
+  // this generates all invalid ids for the pair case
+  //
+  // this currently only generates the pt_1 case, where the ids are
+  // bisected by repeating digits
+  //
+  // how do we get the rest?
+  list.range(1, 99_999)
+  |> list.map(with: fn(n) {
+    invalid_ids_from(n)
+    // let substr = int.to_string(n)
+    // case int.parse(substr <> substr) {
+    //   Error(_) -> panic as "should never happen in all_invalid_ids"
+    //   Ok(invalid_id) -> invalid_id
+    //}
+  })
+  |> list.flatten
+  |> set.from_list()
+}
+
 pub fn pt_2(input: Result(List(#(Int, Int)), String)) -> Int {
   // part 2 is a bit different -- instead of just halving, it's any
   // set of repeating digits from 1 digit to n/2 digits (or the string bisected)
@@ -174,12 +242,20 @@ pub fn pt_2(input: Result(List(#(Int, Int)), String)) -> Int {
   case input {
     Error(bad_parse) -> panic as { "bad range: " <> bad_parse }
     Ok(ranges) -> {
-      list.map(ranges, with: fn(range) -> List(Int) {
-        invalid_ids(in: range, checker: is_invalid_all)
+      let invalid_ids = pt_2_all_invalid_ids()
+      list.map(ranges, with: fn(range) {
+        let #(lower, upper) = range
+        list.filter(list.range(lower, upper), keeping: fn(id) {
+          set.contains(invalid_ids, id)
+        })
       })
       |> list.flatten()
       |> int.sum()
-      // we got 25663320876 first try, but it's not correct...
+      // list.map(ranges, with: fn(range) -> List(Int) {
+      //   invalid_ids(in: range, checker: is_invalid_all)
+      // })
+      // |> list.flatten()
+      // |> int.sum()
     }
   }
 }
