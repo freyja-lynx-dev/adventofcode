@@ -121,6 +121,18 @@ fn day3_test_data() -> List(List(Int)) {
   )
 }
 
+fn day3_awkward_case() -> List(List(Int)) {
+  day_3.parse("818181911112111")
+}
+
+fn day3_bank_2_test_data() -> List(List(Int)) {
+  day_3.parse("811111111111119")
+}
+
+fn day3_bank_3_test_data() -> List(List(Int)) {
+  day_3.parse("234234234234278")
+}
+
 pub fn day3_parse_test() {
   assert [[9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1]]
     == day3_single_bank_test()
@@ -128,6 +140,12 @@ pub fn day3_parse_test() {
 
 pub fn day3_pt_1_test() {
   assert 98 == day_3.pt_1(day3_single_bank_test())
+
+  assert 89 == day_3.pt_1(day3_bank_2_test_data())
+
+  assert 78 == day_3.pt_1(day3_bank_3_test_data())
+
+  assert 92 == day_3.pt_1(day3_awkward_case())
 
   assert 357 == day_3.pt_1(day3_test_data())
 }
