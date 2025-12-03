@@ -149,3 +149,23 @@ pub fn day3_pt_1_test() {
 
   assert 357 == day_3.pt_1(day3_test_data())
 }
+
+pub fn day3_power_test() {
+  assert 1 == day_3.int_power(10, 0)
+  assert 10 == day_3.int_power(10, 1)
+  assert 100 == day_3.int_power(10, 2)
+  assert 1000 == day_3.int_power(10, 3)
+  assert 10_000 == day_3.int_power(10, 4)
+}
+
+pub fn day3_pt_2_test() {
+  assert 987_654_321_111 == day_3.pt_2(day3_single_bank_test())
+
+  assert 811_111_111_119 == day_3.pt_2(day3_bank_2_test_data())
+
+  assert 434_234_234_278 == day_3.pt_2(day3_bank_3_test_data())
+
+  assert 888_911_112_111 == day_3.pt_2(day3_awkward_case())
+
+  assert 3_121_910_778_619 == day_3.pt_2(day3_test_data())
+}
