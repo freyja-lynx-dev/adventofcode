@@ -99,18 +99,7 @@ pub fn pt_1(input: Result(List(#(Int, Int)), String)) -> Int {
       |> list.flatten()
       |> int.sum()
     }
-    //   list.map(ranges, with: fn(range) -> List(Int) {
-    //     invalid_ids(in: range, checker: is_invalid_pair)
-    //   })
-    //   |> list.flatten()
-    //   |> int.sum()
-    // }
   }
-}
-
-type Parity {
-  Odd
-  Even
 }
 
 fn is_invalid_all_helper(
@@ -136,38 +125,10 @@ pub fn is_invalid_all(id: Int) -> Bool {
   let id_string = int.to_string(id)
   let id_length = string.length(id_string)
   let id_graphemes = string.to_graphemes(id_string)
-  // let parity = case id_length % 2 {
-  //   0 -> Even
-  //   _ -> Odd
-  // }
   case id_length {
     1 -> False
     _ -> is_invalid_all_helper(id_graphemes, id_length, 1)
   }
-  // let all_same_digit = case list.unique(id_graphemes) {
-  //   [_] -> True
-  //   _ -> False
-  // }
-  // list.fold_until(over: id_graphemes, from: True, with: fn(acc, digit) {
-  //   case digit == first {
-  //     True -> Continue(acc)
-  //     False -> Stop(False)
-  //   }
-  // })
-
-  // case parity, all_same_digit {
-  //   _, True -> True
-  //   // you could theoretically just use the helper from the start
-  //   // but i think there's a potential to optimize based on only checking
-  //   // chunks which can actually occur in an ID of length N, rather than all
-  //   // chunk sizes from 1 -> n/2
-  //   //
-  //   // but i want to get it working before i get fussed about the details
-  //   Even, _ ->
-  //     is_invalid_all_helper(id: id_graphemes, length: id_length, chunk_by: 2)
-  //   Odd, _ ->
-  //     is_invalid_all_helper(id: id_graphemes, length: id_length, chunk_by: 3)
-  // }
 }
 
 fn generate_repeats(n, str) -> Int {
@@ -215,14 +176,7 @@ fn pt_2_all_invalid_ids() -> Set(Int) {
   //
   // how do we get the rest?
   list.range(1, 99_999)
-  |> list.map(with: fn(n) {
-    invalid_ids_from(n)
-    // let substr = int.to_string(n)
-    // case int.parse(substr <> substr) {
-    //   Error(_) -> panic as "should never happen in all_invalid_ids"
-    //   Ok(invalid_id) -> invalid_id
-    //}
-  })
+  |> list.map(with: fn(n) { invalid_ids_from(n) })
   |> list.flatten
   |> set.from_list()
 }
@@ -251,11 +205,6 @@ pub fn pt_2(input: Result(List(#(Int, Int)), String)) -> Int {
       })
       |> list.flatten()
       |> int.sum()
-      // list.map(ranges, with: fn(range) -> List(Int) {
-      //   invalid_ids(in: range, checker: is_invalid_all)
-      // })
-      // |> list.flatten()
-      // |> int.sum()
     }
   }
 }
