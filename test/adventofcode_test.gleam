@@ -1,5 +1,6 @@
 import aoc_2025/day_1
 import aoc_2025/day_2
+import aoc_2025/day_3
 import gleeunit
 
 pub fn main() -> Nil {
@@ -105,4 +106,28 @@ pub fn day2_pt_2_test() {
   let ranges = day_2.parse(day2_test_data())
 
   assert 4_174_379_265 == day_2.pt_2(ranges)
+}
+
+fn day3_single_bank_test() -> List(List(Int)) {
+  day_3.parse("987654321111111")
+}
+
+fn day3_test_data() -> List(List(Int)) {
+  day_3.parse(
+    "987654321111111
+811111111111119
+234234234234278
+818181911112111",
+  )
+}
+
+pub fn day3_parse_test() {
+  assert [[9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1]]
+    == day3_single_bank_test()
+}
+
+pub fn day3_pt_1_test() {
+  assert 98 == day_3.pt_1(day3_single_bank_test())
+
+  assert 357 == day_3.pt_1(day3_test_data())
 }

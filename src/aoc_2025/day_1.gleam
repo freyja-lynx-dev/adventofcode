@@ -114,16 +114,16 @@ pub fn pt_2(input: List(Int)) -> Int {
     from: #(0, UnsignedInt(n: 50, max: 99)),
     with: fn(cur, x) {
       let #(wraps, res) = rotate(pair.second(cur), x, True)
-      case pair.second(cur).n {
-        71 -> {
-          echo "current dial pos: " <> int.to_string(pair.second(cur).n)
-          echo "x: " <> int.to_string(x)
-          echo "wraps: " <> int.to_string(wraps)
-          echo "res: " <> int.to_string(res)
-          Nil
-        }
-        _ -> Nil
-      }
+      // case pair.second(cur).n {
+      //   71 -> {
+      // echo "current dial pos: " <> int.to_string(pair.second(cur).n)
+      // echo "x: " <> int.to_string(x)
+      // echo "wraps: " <> int.to_string(wraps)
+      // echo "res: " <> int.to_string(res)
+      //     Nil
+      //   }
+      //   _ -> Nil
+      // }
       // #(pair.first(cur) + wraps, UnsignedInt(res, pair.second(cur).max))
       case res {
         0 -> #(pair.first(cur) + wraps, UnsignedInt(0, pair.second(cur).max))
@@ -156,16 +156,9 @@ fn unsigned_add(a: UnsignedInt, b: Int) -> #(Int, Int) {
   //     }
   //   }
   //   False -> {
-  let res = case uncapped_result {
+  case uncapped_result {
     r if r > a.max -> #(0, remainder)
     n -> #(0, n)
-  }
-  case pair.second(res) {
-    100 -> {
-      echo b
-      echo res
-    }
-    _ -> res
   }
 }
 
@@ -176,7 +169,10 @@ fn unsigned_add_all_wraps(a: UnsignedInt, b: Int) -> #(Int, Int) {
   let full_wrap = a.max + 1
   let uncapped_result = a.n + b
   let wraps = uncapped_result / full_wrap
-  let remainder = uncapped_result % full_wrap
+  let remainder = case int.modulo(uncapped_result, full_wrap) {
+    Error(_) -> panic
+    Ok(x) -> x
+  }
   // echo "unsigned add"
   // echo "b: " <> int.to_string(b)
   // echo "uncapped_result: " <> int.to_string(uncapped_result)
@@ -209,27 +205,48 @@ fn unsigned_subtract_all_wraps(a: UnsignedInt, b: Int) -> #(Int, Int) {
   let full_wrap = a.max + 1
   let uncapped_result = a.n - b
   let wraps = int.absolute_value(uncapped_result / full_wrap)
-  let remainder = int.absolute_value(uncapped_result % full_wrap)
+  let remainder = case int.modulo(uncapped_result, full_wrap) {
+    Error(_) -> panic
+    Ok(x) -> x
+  }
   // echo "unsigned sub"
   // echo "wraps: " <> int.to_string(wraps)
   // echo "remainder: " <> int.to_string(remainder)
 
+  // case uncapped_result {
+  //   r if r < 0 -> {
+  //     case a.max + 1 - remainder {
+  //       100 -> #(wraps + 1, 0)
+  //       r -> #(wraps + 1, r)
+  //     }
+  //   }
+  //   _ -> {
+  //     // #(wraps, r)
+
+  //     case a.max + 1 - remainder {
+  //       100 -> #(wraps + 1, 0)
+  //       r -> #(wraps, r)
+  //     }
+  //   }
+  // }
   case uncapped_result {
     r if r < 0 -> {
       case a.max + 1 - remainder {
-        100 -> #(wraps + 1, 0)
-        r -> #(wraps + 1, r)
+        100 -> #(1, 0)
+        r -> #(1, r)
       }
     }
-    _ -> {
-      // #(wraps, r)
-
-      case a.max + 1 - remainder {
-        100 -> #(wraps + 1, 0)
-        r -> #(wraps, r)
-      }
-    }
+    r -> #(0, r)
   }
+  // case uncapped_result {
+  //   r if r < 0 -> {
+  //     case a.max + 1 - remainder {
+  //       100 -> #(1, 0)
+  //       r -> #(1, r)
+  //     }
+  //   }
+  //   r -> #(0, r)
+  // }
 }
 
 fn rotate(a: UnsignedInt, b: Int, all_wraps: Bool) -> #(Int, Int) {
