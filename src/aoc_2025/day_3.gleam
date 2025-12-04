@@ -36,35 +36,36 @@ pub fn pt_1(input: List(List(Int))) -> Int {
   // so we can just do two index folds and probably get the right answer
   //
   // who knows, maybe pt2 involves the indices lol
-  list.map(input, with: fn(bank: List(Int)) -> Int {
-    let bank_last = list.length(bank) - 1
-    let #(index, tens): #(Int, Int) =
-      list.index_fold(over: bank, from: #(-1, -1), with: fn(acc, cell, index) {
-        let #(_, highest_joltage) = acc
-        case cell {
-          // we can disregard the last digit, as it will not have any pairing
-          // after itself
-          _ if index == bank_last -> acc
-          // new highest joltage
-          newjoltage if cell > highest_joltage -> #(index, newjoltage)
-          // we want the earliest instance of the highest joltage
-          _ -> acc
-        }
-      })
-    let ones: Int =
-      list.split(bank, index + 1)
-      |> pair.second
-      |> list.fold_until(from: -1, with: fn(highest, cell) {
-        case cell > highest {
-          _ if highest == 9 -> Stop(highest)
-          True -> Continue(cell)
-          False -> Continue(highest)
-        }
-      })
-    int.multiply(tens, 10)
-    |> int.add(ones)
-  })
-  |> int.sum
+  // list.map(input, with: fn(bank: List(Int)) -> Int {
+  //   let bank_last = list.length(bank) - 1
+  //   let #(index, tens): #(Int, Int) =
+  //     list.index_fold(over: bank, from: #(-1, -1), with: fn(acc, cell, index) {
+  //       let #(_, highest_joltage) = acc
+  //       case cell {
+  //         // we can disregard the last digit, as it will not have any pairing
+  //         // after itself
+  //         _ if index == bank_last -> acc
+  //         // new highest joltage
+  //         newjoltage if cell > highest_joltage -> #(index, newjoltage)
+  //         // we want the earliest instance of the highest joltage
+  //         _ -> acc
+  //       }
+  //     })
+  //   let ones: Int =
+  //     list.split(bank, index + 1)
+  //     |> pair.second
+  //     |> list.fold_until(from: -1, with: fn(highest, cell) {
+  //       case cell > highest {
+  //         _ if highest == 9 -> Stop(highest)
+  //         True -> Continue(cell)
+  //         False -> Continue(highest)
+  //       }
+  //     })
+  //   int.multiply(tens, 10)
+  //   |> int.add(ones)
+  // })
+  // |> int.sum
+  solve(input, 2)
 }
 
 pub fn int_power(base base: Int, power power: Int) -> Int {
@@ -74,6 +75,28 @@ pub fn int_power(base base: Int, power power: Int) -> Int {
     1 -> base
     2 -> base * base
     3 -> base * base * base
+    4 -> base * base * base * base
+    5 -> base * base * base * base * base
+    6 -> base * base * base * base * base * base
+    7 -> base * base * base * base * base * base * base
+    8 -> base * base * base * base * base * base * base * base
+    9 -> base * base * base * base * base * base * base * base * base
+    10 -> base * base * base * base * base * base * base * base * base * base
+    11 ->
+      base * base * base * base * base * base * base * base * base * base * base
+    12 ->
+      base
+      * base
+      * base
+      * base
+      * base
+      * base
+      * base
+      * base
+      * base
+      * base
+      * base
+      * base
     _ ->
       list.repeat(base, power - 1)
       |> list.fold(from: base, with: int.multiply)
@@ -151,8 +174,82 @@ pub fn pt_2(input: List(List(Int))) -> Int {
   // we need a sequential, but not necessarily contiguous, set of N cells from
   // the battery bank, to maximize the number of jolts
   //
-  list.map(input, with: fn(bank: List(Int)) -> Int {
-    find_maximal_joltage(in: bank, take: 12, seed: 0)
+  // list.map(input, with: fn(bank: List(Int)) -> Int {
+  //   find_maximal_joltage(in: bank, take: 12, seed: 0)
+  // })
+  // |> int.sum
+  solve(input, 12)
+}
+
+// the following four functions are not my creation
+// they are from @LittleLily on discord
+// very elegant solution i'm breaking down to understand for my own learning
+fn keep_till_max(xs: List(Int)) -> #(Int, List(Int)) {
+  do_keep_till_max(xs, 0, [], [])
+}
+
+fn do_keep_till_max(
+  xs: List(Int),
+  max: Int,
+  kept: List(Int),
+  seen: List(Int),
+) -> #(Int, List(Int)) {
+  // echo "finding max in xs:"
+  // echo xs
+  // echo "max:"
+  // echo max
+  // echo "kept:"
+  // echo kept
+  // echo "seen:"
+  // echo seen
+  case xs {
+    // if there's no more digits to check, we found the max, return what we kept
+    [] -> #(max, list.reverse(kept))
+    // if we found a new max at the front of our bank slice:
+    //   - set what we keep to what we have seen
+    //   - put the new max at the front of what we've seen
+    [x, ..xs] if x >= max -> {
+      // echo { "new max: " <> int.to_string(x) }
+      do_keep_till_max(xs, x, seen, [x, ..seen])
+    }
+    // otherwise, just put what we saw at the front of seen
+    [x, ..xs] -> do_keep_till_max(xs, max, kept, [x, ..seen])
+  }
+}
+
+fn solve(banks: List(List(Int)), needed: Int) -> Int {
+  // for each bank
+  list.map(banks, fn(bank) {
+    // separate the bank into the reserved digits (the first m-1 digits from the right)
+    // and available (the set of digits left after reservation)
+    let #(reserved, available) =
+      list.reverse(bank)
+      |> list.split(needed - 1)
+
+    // solve for the largest nonconsecutive digit sequence
+    do_solve(available, list.reverse(reserved), [])
   })
+  // add up the digits
   |> int.sum
+}
+
+fn do_solve(available: List(Int), reserved: List(Int), acc: List(Int)) -> Int {
+  // echo "available: "
+  // echo available
+  // echo "reserved: "
+  // echo reserved
+  // echo "acc: "
+  // echo acc
+
+  // find the maximal digit in the set of available digits
+  let #(max, available): #(Int, List(Int)) = keep_till_max(available)
+  // put the maximal digit in the back of the accumulation
+  let acc = [max, ..acc]
+
+  case reserved {
+    // if there's no more reserved digits, we can sum them up
+    [] -> list.fold_right(acc, 0, fn(acc, x) { 10 * acc + x })
+    // otherwise, solve for the next maximal digit
+    [new, ..reserved] -> do_solve([new, ..available], reserved, acc)
+  }
 }

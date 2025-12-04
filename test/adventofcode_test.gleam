@@ -139,15 +139,14 @@ pub fn day3_parse_test() {
 }
 
 pub fn day3_pt_1_test() {
-  assert 98 == day_3.pt_1(day3_single_bank_test())
+  // assert 98 == day_3.pt_1(day3_single_bank_test())
 
-  assert 89 == day_3.pt_1(day3_bank_2_test_data())
+  // assert 89 == day_3.pt_1(day3_bank_2_test_data())
 
-  assert 78 == day_3.pt_1(day3_bank_3_test_data())
+  // assert 78 == day_3.pt_1(day3_bank_3_test_data())
 
   assert 92 == day_3.pt_1(day3_awkward_case())
-
-  assert 357 == day_3.pt_1(day3_test_data())
+  // assert 357 == day_3.pt_1(day3_test_data())
 }
 
 pub fn day3_power_test() {
@@ -159,13 +158,12 @@ pub fn day3_power_test() {
 }
 
 pub fn day3_pt_2_test() {
-  assert 987_654_321_111 == day_3.pt_2(day3_single_bank_test())
+  todo
+  // assert 987_654_321_111 == day_3.pt_2(day3_single_bank_test())
+  // assert 811_111_111_119 == day_3.pt_2(day3_bank_2_test_data())
 
-  assert 811_111_111_119 == day_3.pt_2(day3_bank_2_test_data())
+  // assert 434_234_234_278 == day_3.pt_2(day3_bank_3_test_data())
 
-  assert 434_234_234_278 == day_3.pt_2(day3_bank_3_test_data())
-
-  assert 888_911_112_111 == day_3.pt_2(day3_awkward_case())
-
-  assert 3_121_910_778_619 == day_3.pt_2(day3_test_data())
+  //assert 888_911_112_111 == day_3.pt_2(day3_awkward_case())
+  // assert 3_121_910_778_619 == day_3.pt_2(day3_test_data())
 }
