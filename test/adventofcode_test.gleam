@@ -1,6 +1,7 @@
 import aoc_2025/day_1
 import aoc_2025/day_2
 import aoc_2025/day_3
+import aoc_2025/day_4
 import gleeunit
 
 pub fn main() -> Nil {
@@ -165,4 +166,25 @@ pub fn day3_pt_2_test() {
 
   assert 888_911_112_111 == day_3.pt_2(day3_awkward_case())
   assert 3_121_910_778_619 == day_3.pt_2(day3_test_data())
+}
+
+pub fn day4_test_data() -> String {
+  "..@@.@@@@.
+@@@.@.@.@@
+@@@@@.@.@@
+@.@@@@..@.
+@@.@@@@.@@
+.@@@@@@@.@
+.@.@.@.@@@
+@.@@@.@@@@
+.@@@@@@@@.
+@.@.@@@.@."
+}
+
+pub fn day4_pt_1_test() {
+  assert 13 == day_4.pt_1(day_4.parse(day4_test_data()))
+}
+
+pub fn day4_pt_2_test() {
+  assert 43 == day_4.pt_2(day_4.parse(day4_test_data()))
 }
