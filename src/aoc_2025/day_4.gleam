@@ -1,7 +1,6 @@
-import gleam/bool
 import gleam/dict.{type Dict}
-import gleam/int
-import gleam/list
+import gleam/list.{Continue, Stop}
+import gleam/pair
 import gleam/string
 
 fn is_roll(cell: String) -> Bool {
@@ -36,7 +35,6 @@ fn is_accessible(
       let #(dx, dy) = d
       #(px + dx, py + dy)
     })
-
   let neighbors =
     list.fold(over: points, from: 0, with: fn(acc, d) {
       case dict.get(grid, d) {
@@ -87,6 +85,57 @@ pub fn pt_1(input: Dict(#(Int, Int), Bool)) -> Int {
   })
 }
 
+fn do_pick_rolls(grid, directions, sum) {
+  dict.fold(
+    over: grid,
+    from: #(list.new(), grid, sum),
+    with: fn(acc, point, value) {
+      let #(accessible, grid, picks) = acc
+      case value {
+        False -> #(
+          accessible,
+          // get rid of non-rolls as we go, we don't need them later
+          dict.drop(from: grid, drop: [point]),
+          picks,
+        )
+        True -> {
+          case is_accessible(point:, from: directions, on: grid, max: 3) {
+            False -> acc
+            True -> {
+              // take accessible rolls greedily
+              #(
+                [point, ..accessible],
+                dict.drop(from: grid, drop: [point]),
+                picks + 1,
+              )
+            }
+          }
+        }
+      }
+    },
+  )
+}
+
+fn pick_rolls_helper(
+  in grid: Dict(#(Int, Int), Bool),
+  by directions: List(#(Int, Int)),
+  sum sum: Int,
+) -> Int {
+  case do_pick_rolls(grid, directions, sum) {
+    #([], _, total) -> total
+    #(_, new_grid, acc) -> {
+      pick_rolls_helper(in: new_grid, by: directions, sum: acc)
+    }
+  }
+}
+
+fn pick_rolls(
+  in grid: Dict(#(Int, Int), Bool),
+  by directions: List(#(Int, Int)),
+) -> Int {
+  pick_rolls_helper(in: grid, by: directions, sum: 0)
+}
+
 pub fn pt_2(input: Dict(#(Int, Int), Bool)) {
   let directions = [
     // left
@@ -106,21 +155,5 @@ pub fn pt_2(input: Dict(#(Int, Int), Bool)) {
     // leftdown
     #(-1, -1),
   ]
-  dict.fold(over: input, from: 0, with: fn(acc, point, value) {
-    case value {
-      False -> acc
-      True -> {
-        case is_accessible(point:, from: directions, on: input, max: 3) {
-          False -> {
-            // keep track of inaccessible rolls
-            acc
-          }
-          True -> {
-            // take accessible rolls greedily
-            acc + 1
-          }
-        }
-      }
-    }
-  })
+  pick_rolls(in: input, by: directions)
 }
