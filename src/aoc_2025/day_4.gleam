@@ -49,26 +49,8 @@ pub fn pt_1(input: Set(#(Int, Int))) -> Int {
   // if we had a dict of only the paper cells, you cut out some unnecessary cell checks
   // each cell check in naive approach calls into the dict at least 4, at most 8 times
   // whatever
-  let directions = [
-    // left
-    #(-1, 0),
-    // right
-    #(1, 0),
-    // down
-    #(0, -1),
-    // up
-    #(0, 1),
-    // leftup
-    #(-1, 1),
-    // rightup
-    #(1, 1),
-    // rightdown 
-    #(1, -1),
-    // leftdown
-    #(-1, -1),
-  ]
   set.fold(over: input, from: 0, with: fn(acc, point) {
-    case is_accessible(point:, from: directions, on: input, max: 3) {
+    case is_accessible2(input, point) {
       False -> acc
       True -> acc + 1
     }
@@ -77,12 +59,11 @@ pub fn pt_1(input: Set(#(Int, Int))) -> Int {
 
 fn do_pick_rolls(
   grid: Set(#(Int, Int)),
-  directions: List(#(Int, Int)),
   sum: Int,
 ) -> #(List(#(Int, Int)), Set(#(Int, Int)), Int) {
   set.fold(over: grid, from: #(list.new(), grid, sum), with: fn(acc, point) {
     let #(accessible, grid, picks) = acc
-    case is_accessible(point:, from: directions, on: grid, max: 3) {
+    case is_accessible2(grid, point) {
       False -> acc
       True -> {
         // take accessible rolls greedily
@@ -92,44 +73,43 @@ fn do_pick_rolls(
   })
 }
 
-fn pick_rolls_helper(
-  in grid: Set(#(Int, Int)),
-  by directions: List(#(Int, Int)),
-  sum sum: Int,
-) -> Int {
-  case do_pick_rolls(grid, directions, sum) {
+fn pick_rolls(in grid: Set(#(Int, Int)), sum sum: Int) -> Int {
+  case do_pick_rolls(grid, sum) {
     #([], _, total) -> total
     #(_, new_grid, acc) -> {
-      pick_rolls_helper(in: new_grid, by: directions, sum: acc)
+      pick_rolls(in: new_grid, sum: acc)
     }
   }
 }
 
-fn pick_rolls(
-  in grid: Set(#(Int, Int)),
-  by directions: List(#(Int, Int)),
-) -> Int {
-  pick_rolls_helper(in: grid, by: directions, sum: 0)
+pub fn pt_2(input: Set(#(Int, Int))) {
+  pick_rolls(in: input, sum: 0)
 }
 
-pub fn pt_2(input: Set(#(Int, Int))) {
-  let directions = [
-    // left
-    #(-1, 0),
-    // right
-    #(1, 0),
-    // down
-    #(0, -1),
-    // up
-    #(0, 1),
-    // leftup
-    #(-1, 1),
-    // rightup
-    #(1, 1),
-    // rightdown 
-    #(1, -1),
-    // leftdown
-    #(-1, -1),
+// the functions below are not mine, they're @LittleLily on discord, for study
+fn neighbors(c: #(Int, Int)) -> List(#(Int, Int)) {
+  let #(x, y) = c
+
+  [
+    #(x - 1, y - 1),
+    #(x - 1, y + 1),
+    #(x + 1, y - 1),
+    #(x + 1, y + 1),
+    #(x, y + 1),
+    #(x, y - 1),
+    #(x + 1, y),
+    #(x - 1, y),
   ]
-  pick_rolls(in: input, by: directions)
+}
+
+fn is_accessible2(rolls: Set(#(Int, Int)), p: #(Int, Int)) -> Bool {
+  list.count(neighbors(p), set.contains(rolls, _)) < 4
+}
+
+fn flood_remove(acc: #(Set(#(Int, Int)), Int), c: #(Int, Int)) {
+  case set.contains(acc.0, c) && is_accessible2(acc.0, c) {
+    False -> acc
+    True ->
+      list.fold(neighbors(c), #(set.delete(acc.0, c), acc.1 + 1), flood_remove)
+  }
 }
