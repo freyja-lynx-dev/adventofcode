@@ -1,31 +1,27 @@
-import gleam/dict.{type Dict}
-import gleam/list.{Continue, Stop}
-import gleam/pair
+import gleam/list
+import gleam/set.{type Set}
 import gleam/string
 
-fn is_roll(cell: String) -> Bool {
-  case cell {
-    "@" -> True
-    _ -> False
-  }
-}
-
-pub fn parse(input: String) -> Dict(#(Int, Int), Bool) {
+pub fn parse(input: String) -> Set(#(Int, Int)) {
   string.split(input, on: "\n")
   |> list.filter(fn(x) { x != "" })
-  |> list.index_map(fn(row, row_i) {
-    list.index_map(string.to_graphemes(row), fn(element, column_i) {
-      #(#(column_i, row_i), is_roll(element))
+  |> list.index_map(fn(row, y) {
+    list.index_map(string.to_graphemes(row), fn(element, x) {
+      case element {
+        "@" -> #(x, y)
+        _ -> #(-1, -1)
+      }
     })
   })
   |> list.flatten
-  |> dict.from_list
+  |> list.filter(keeping: fn(x) { x != #(-1, -1) })
+  |> set.from_list
 }
 
 fn is_accessible(
   point point: #(Int, Int),
   from directions: List(#(Int, Int)),
-  on grid: Dict(#(Int, Int), Bool),
+  on grid: Set(#(Int, Int)),
   max max: Int,
 ) -> Bool {
   let #(px, py) = point
@@ -37,17 +33,16 @@ fn is_accessible(
     })
   let neighbors =
     list.fold(over: points, from: 0, with: fn(acc, d) {
-      case dict.get(grid, d) {
-        Error(_) -> acc
-        Ok(roll) if !roll -> acc
-        Ok(_) -> acc + 1
+      case set.contains(grid, d) {
+        False -> acc
+        True -> acc + 1
       }
     })
 
   neighbors <= max
 }
 
-pub fn pt_1(input: Dict(#(Int, Int), Bool)) -> Int {
+pub fn pt_1(input: Set(#(Int, Int))) -> Int {
   // idk brute force is pretty easy check every cell for neighbors
   // there could be an optimization somewhere in the mist
   // we have a dict of coordinates to bools, which is very easy to separate
@@ -72,52 +67,29 @@ pub fn pt_1(input: Dict(#(Int, Int), Bool)) -> Int {
     // leftdown
     #(-1, -1),
   ]
-  dict.fold(over: input, from: 0, with: fn(acc, point, value) {
-    case value {
+  set.fold(over: input, from: 0, with: fn(acc, point) {
+    case is_accessible(point:, from: directions, on: input, max: 3) {
       False -> acc
-      True -> {
-        case is_accessible(point:, from: directions, on: input, max: 3) {
-          False -> acc
-          True -> acc + 1
-        }
-      }
+      True -> acc + 1
     }
   })
 }
 
 fn do_pick_rolls(grid, directions, sum) {
-  dict.fold(
-    over: grid,
-    from: #(list.new(), grid, sum),
-    with: fn(acc, point, value) {
-      let #(accessible, grid, picks) = acc
-      case value {
-        False -> #(
-          accessible,
-          // get rid of non-rolls as we go, we don't need them later
-          dict.drop(from: grid, drop: [point]),
-          picks,
-        )
-        True -> {
-          case is_accessible(point:, from: directions, on: grid, max: 3) {
-            False -> acc
-            True -> {
-              // take accessible rolls greedily
-              #(
-                [point, ..accessible],
-                dict.drop(from: grid, drop: [point]),
-                picks + 1,
-              )
-            }
-          }
-        }
+  set.fold(over: grid, from: #(list.new(), grid, sum), with: fn(acc, point) {
+    let #(accessible, grid, picks) = acc
+    case is_accessible(point:, from: directions, on: grid, max: 3) {
+      False -> acc
+      True -> {
+        // take accessible rolls greedily
+        #([point, ..accessible], set.delete(from: grid, this: point), picks + 1)
       }
-    },
-  )
+    }
+  })
 }
 
 fn pick_rolls_helper(
-  in grid: Dict(#(Int, Int), Bool),
+  in grid: Set(#(Int, Int)),
   by directions: List(#(Int, Int)),
   sum sum: Int,
 ) -> Int {
@@ -130,13 +102,13 @@ fn pick_rolls_helper(
 }
 
 fn pick_rolls(
-  in grid: Dict(#(Int, Int), Bool),
+  in grid: Set(#(Int, Int)),
   by directions: List(#(Int, Int)),
 ) -> Int {
   pick_rolls_helper(in: grid, by: directions, sum: 0)
 }
 
-pub fn pt_2(input: Dict(#(Int, Int), Bool)) {
+pub fn pt_2(input: Set(#(Int, Int))) {
   let directions = [
     // left
     #(-1, 0),
