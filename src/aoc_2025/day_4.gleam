@@ -75,7 +75,11 @@ pub fn pt_1(input: Set(#(Int, Int))) -> Int {
   })
 }
 
-fn do_pick_rolls(grid, directions, sum) {
+fn do_pick_rolls(
+  grid: Set(#(Int, Int)),
+  directions: List(#(Int, Int)),
+  sum: Int,
+) -> #(List(#(Int, Int)), Set(#(Int, Int)), Int) {
   set.fold(over: grid, from: #(list.new(), grid, sum), with: fn(acc, point) {
     let #(accessible, grid, picks) = acc
     case is_accessible(point:, from: directions, on: grid, max: 3) {
